@@ -1,0 +1,12 @@
+<html>
+    <head>
+        <title>HotelDB</title>
+        <link rel="stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/index.css') }}">
+    </head>
+    <body>
+        <div class="main-cont">
+            <a class="main" href="/">Main</a><a class="main" href="/guest">Guests</a><a class="main" href="/rooms">Rooms</a><a class="main" href="/reservation">Reservations</a>
+        </div>
+        {{content}}
+    </body>
+</html>
