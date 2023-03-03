@@ -2,42 +2,32 @@
 # run with "flask --app server run --debug"
 from flask import Flask, request, render_template
 import mysql.connector as mysql
+import requests
 from markupsafe import Markup
 
 app = Flask(__name__)
 
-#The information to connect to the database
-config = {
-    'user': 'root',
-    'password': 'ABC123',
-    'host': 'localhost',
-    'database': 'Hotel'
-}
+API = 'http://localhost:8000'
 
-@app.route('/reservation')
+@app.route('/reservation/')
 def reservation():
     #Connect to db
-    with mysql.connect(**config) as conn:
-        cursor = conn.cursor()
-        #Gets all reservations and their geust
-        cursor.execute('''SELECT res.ReservationID, res.StartDate, res.EndDate, g.FirstName, g.LastName, g.GuestID
-        FROM Reservation res
-        JOIN Guest g ON g.GuestID = res.GuestID
-        ORDER BY res.ReservationID;''')
+    with requests.get(f'{API}/reservation/') as r:
+        data = r.json()
         #OUtput
         HTMLOut = '<h1>Reservations</h1>'
         #For all reservations
-        for res in cursor.fetchall():
+        for res in data['reservations']:
             #sets variables to make code more understandable
-            resid = res[0]
-            startdate = res[1]
-            enddate = res[2]
-            name = f'{res[3]} {res[4]}'
-            guestid = res[5]
+            resid = res["ReservationID"]
+            startdate = res["StartDate"]
+            enddate = res["EndDate"]
+            name = f'{res["FirstName"]} {res["LastName"]}'
+            guestid = res["GuestID"]
 
             #Generates HTML
             HTMLOut += '<div><p>'
-            HTMLOut += f'<b>ReservationID:</b> <a href="reservation/search?reservationid={resid}">{resid}</a> '
+            HTMLOut += f'<b>ReservationID:</b> <a href="/reservation/search?reservationid={resid}">{resid}</a> '
             HTMLOut += f'<b>Start Date:</b> {startdate} '
             HTMLOut += f'<b>End Date:</b> {enddate} '
             HTMLOut += f'<b>Guest:</b> <a href="/guest/search?guestid={guestid}">{name}</a>'
@@ -52,29 +42,21 @@ def get_reservation():
     args = request.args.to_dict()
     resid = args['reservationid']
     #Connect to db
-    with mysql.connect(**config) as conn:
-        cursor = conn.cursor()
+    with requests.get(f'{API}/reservation/{resid}') as r:
+        data = r.json()
         #Gets all reservation information
-        cursor.execute('''SELECT res.ReservationID, res.StartDate, res.EndDate, g.FirstName, g.LastName, g.GuestID
-        FROM Reservation res
-        JOIN Guest g ON g.GuestID = res.GuestID
-        JOIN RoomReservation rr ON rr.ReservationID = res.ReservationID
-        WHERE res.ReservationID = %s;''',(resid,))
-
         HTMLOut = '<h1>Reservation</h1>'
 
-        res = cursor.fetchall()[0]
+        res = data["reservations"][0]
         #sets eaier to read variables
-        resid = res[0]
-        startdate = res[1]
-        enddate = res[2]
-        name = f'{res[3]} {res[4]}'
-        guestid = res[5]
+        resid = res["ReservationID"]
+        startdate = res["StartDate"]
+        enddate = res["EndDate"]
+        name = f'{res["FirstName"]} {res["LastName"]}'
+        guestid = res["GuestID"]
+        rooms = res["rooms"]
 
-        cursor.close()
-        cursor = conn.cursor()
-        cursor.execute('''SELECT RoomNumber FROM RoomReservation WHERE ReservationID = %s''', (resid,))
-        rooms = cursor.fetchall()
+
 
         #Generates HTML
         HTMLOut += '<div>'
@@ -83,8 +65,7 @@ def get_reservation():
         HTMLOut += f'<div><p><b>End Date:</b> {enddate}</p></div>'
         HTMLOut += f'<div><p><b>Rooms Booked:</b></p>'
         for room in rooms:
-            roomnum = room[0]
-            HTMLOut += f'<div><a href="/rooms/search?roomnumber={roomnum}">{roomnum}</a></div>'
+            HTMLOut += f'<div><a href="/rooms/search?roomnumber={room}">{room}</a></div>'
 
         HTMLOut += f'</div>'
         HTMLOut += f'<div><b>Guest:</b> <a href="/guest/search?guestid={guestid}">{name}</a></div>'
@@ -99,51 +80,43 @@ def get_reservation():
 def get_guestreservation():
     args = request.args.to_dict()
     guestid = args['guestid']
-    with mysql.connect(**config) as conn:
-        cursor = conn.cursor()
-        #selects geust neam
-        cursor.execute('SELECT FirstName, LastName FROM Guest WHERE GuestID = %s',(guestid,))
-        guest = cursor.fetchall()[0]
+    with requests.get(f'{API}/reservation/') as r:
+        data = r.json()
+        data = data["reservations"]
         #Gsets vatriable to Guest Name
-        name = f'{guest[0]} {guest[1]}'
-        cursor.close()
 
-        cursor = conn.cursor()
-        #Reservation infor a a given guest
-        cursor.execute('SELECT ReservationID, StartDate, EndDate FROM Reservation WHERE GuestID = %s;', (guestid,))
-        #ADD GUEST NAME
         HTMLOut = '<h1>Reservation</h1>'
-        HTMLOut += f'<h2>{name}</h2>'
-        for res in cursor.fetchall():
-            resid = res[0]
-            startdate = res[1]
-            enddate = res[2]
-            #gen HTML
-            HTMLOut += f'<p>'
-            HTMLOut += f'<b>Reservation ID:</b> <a href="/reservation/search?reservationid={resid}">{resid}</a> '
-            HTMLOut += f'<b>Start Date:</b> {startdate} '
-            HTMLOut += f'<b>End Date:</b> {enddate}'
-            HTMLOut += f'</p>'
+
+        for res in data:
+            if res["GuestID"] == int(guestid):
+        
+                resid = res["ReservationID"]
+                startdate = res["StartDate"]
+                enddate = res["EndDate"]
+                #gen HTML
+                HTMLOut += f'<p>'
+                HTMLOut += f'<b>Reservation ID:</b> <a href="/reservation/search?reservationid={resid}">{resid}</a> '
+                HTMLOut += f'<b>Start Date:</b> {startdate} '
+                HTMLOut += f'<b>End Date:</b> {enddate}'
+                HTMLOut += f'</p>'
     HTMLOut = Markup(HTMLOut)
 
     return render_template('index.html', content=HTMLOut)
 
 #Route for guests
-@app.route('/guest')
+@app.route('/guest/')
 def guests():
     #Connects to DB
-    with mysql.connect(**config) as conn:
-        cursor = conn.cursor()
-        #Executes Select Query to get all guests
-        cursor.execute('SELECT GuestID, FirstName, LastName FROM Guest;')
+    with requests.get(f'{API}/guest/') as r:
+        data = r.json()
+        data = data["guests"]
         #Title
         HTMLOut = '<h1>Guests</h1>'
         #For every guest, creates a hyperlink to their "OWN" page with information about each guest
-        for guest in cursor.fetchall():
-            guestid = guest[0]
-            gfirstname = guest[1]
-            glastname = guest[2]
-            HTMLOut += f'<div><a href="/guest/search?guestid={guestid}">{gfirstname} {glastname}</a></div>'
+        for guest in data:
+            guestid = guest["GuestID"]
+            name = f'{guest["FirstName"]} {guest["LastName"]}'
+            HTMLOut += f'<div><a href="/guest/search?guestid={guestid}">{name}</a></div>'
         
         HTMLOut = Markup(HTMLOut)
         return render_template('index.html', content=HTMLOut)
@@ -153,19 +126,15 @@ def guests():
 def get_guest():
     args = request.args.to_dict()
     guestid = args['guestid']
-    with mysql.connect(**config) as conn:
-        cursor = conn.cursor()
-        cursor.execute('''SELECT g.FirstName, g.LastName, g.Address, c.City, c.State, c.Zipcode, g.Phone 
-        FROM Guest g
-        JOIN City c ON c.Zipcode = g.Zipcode
-        WHERE GuestID = %s;''', (guestid,))
-        guest = cursor.fetchall()[0]
+    with requests.get(f'{API}/guest/{guestid}') as r:
+        data = r.json()
+        guest = data["guests"][0]
         #Output string
         HTMLOut = '<h1>Guest</h1>'
         #variables from query
-        name = f'{guest[0]} {guest[1]}'
-        address = f'{guest[2]}, {guest[3]}, {guest[4]}, {guest[5]}'
-        phone = guest[6]
+        name = f'{guest["FirstName"]} {guest["LastName"]}'
+        address = f'{guest["Address"]}, {guest["City"]}, {guest["State"]}, {guest["ZipCode"]}'
+        phone = guest["Phone"]
         #generating HTML
         HTMLOut += '<div>'
         HTMLOut += f'<div><p><b>Name:</b> {name}</p></div>'
@@ -181,21 +150,20 @@ def get_guest():
 @app.route('/rooms')
 def rooms():
     #Connects to DB
-    with mysql.connect(**config) as conn:
-        cursor = conn.cursor()
-        #Executes Select Query to get all rooms and types
-        cursor.execute('SELECT r.RoomNumber, t.Name, g.PriceA FROM Room r JOIN Type t ON r.TypeID = t.TypeID JOIN get_price g ON g.RoomNumber = r.RoomNumber;')
-        #Title
+    with requests.get(f'{API}/room/') as r:
+        data = r.json()
+        data = data["rooms"]
         HTMLOut = '<h1>Rooms</h1>'
         #For every Room, creates a hyperlink to their "OWN" page with information about each Room
-        for room in cursor.fetchall():
-            roomnum = room[0]
-            roomtype = room[1]
-            price = room[2]
+        for room in data:
+            roomnum = room["RoomNumber"]
+            roomtype = room["Type"]
+            price = room["Price"]
+            typeid = room["TypeID"]
             #html for the room information
             HTMLOut += f'<div><p>'
             HTMLOut += f'<b>Room Number:</b> <a href="/rooms/search?roomnumber={roomnum}">{roomnum}</a> '
-            HTMLOut += f'<b>Type:</b> <a href="/type/search?type={roomtype}">{roomtype}</a> '
+            HTMLOut += f'<b>Type:</b> <a href="/type/search?type={typeid}">{roomtype}</a> '
             HTMLOut += f'<b>Price: </b>${price}'
             HTMLOut += f'</p></div>'
 
@@ -208,29 +176,24 @@ def get_room():
     args = request.args.to_dict()
     roomnum = args['roomnumber']
     #Connects to DB
-    with mysql.connect(**config) as conn:
-        cursor = conn.cursor()
-        #Get Room Type
-        cursor.execute('SELECT t.Name FROM Room r JOIN Type t ON r.TypeID = t.TypeID WHERE r.RoomNumber = %s;', (roomnum,))
-        typename = cursor.fetchall()[0][0]
-        #Close to make new  query
-        cursor.close()
+    with requests.get(f'{API}/room/{roomnum}') as r:
+        data = r.json()
 
-        cursor = conn.cursor()
-        #Executes Select Query to get room information
-        cursor.execute('''SELECT a.Name 
-        FROM Amenities a 
-        JOIN RoomAmenities ra ON ra.AmenitiesID = a.AmenitiesID 
-        WHERE ra.RoomNumber = %s;''', (roomnum,))
-        #Will Hold All Amenities
-        amenities = ''
+        room = data["rooms"][0]
+        roomnum = room["RoomNumber"]
+        roomtype = room["Type"]
+        typeid = room["TypeID"]
+        #Close to make new  query
         
-        for amen in cursor.fetchall():
-            amenities += f'<p> {amen[0]} </p>'
+        #Will Hold All Amenities
+        #amenities = ''
+        
+        #for amen in cursor.fetchall():
+        #    amenities += f'<p> {amen[0]} </p>'
         
         HTMLOut = f'<h1>{roomnum}</h1>'
-        HTMLOut += f'<p><b>Room Is a: </b><a href="/type/search?type={typename}">{typename}</a></p><p><b>Amenities Included in the Room:</b> </p>'
-        HTMLOut += f'<div>{amenities}</div>'
+        HTMLOut += f'<p><b>Room Is a: </b><a href="/type/search?type={typeid}">{roomtype}</a></p><p><b>Amenities Included in the Room:</b> </p>'
+        #HTMLOut += f'<div>{amenities}</div>'
         HTMLOut = Markup(HTMLOut)
 
         return render_template('index.html', content=HTMLOut)
@@ -239,19 +202,19 @@ def get_room():
 @app.route('/type/search', methods=['GET'])
 def get_type():
     args = request.args.to_dict()
-    typename = args['type']
-    with mysql.connect(**config) as conn:
-        cursor = conn.cursor()
-        #Get Type information
-        cursor.execute('SELECT Price, PriceExtraPerson, StandardOccupancy, MaxOccupancy FROM Type WHERE Name = %s;', (typename,))
-        typeinfo = cursor.fetchall()[0]
+    typeid = args['type']
+
+    with requests.get(f'{API}/type/{typeid}') as r:
+        data = r.json()
+        typeinfo = data["type"][0]
         #naming all the type information
-        pricePerNight = typeinfo[0]
-        priceExtra = typeinfo[1]
-        standOcc = typeinfo[2]
-        maxOcc = typeinfo[3]
+        name = typeinfo["Name"]
+        pricePerNight = typeinfo["Price"]
+        priceExtra = typeinfo["PriceExtraPerson"]
+        standOcc = typeinfo["StandardOccupancy"]
+        maxOcc = typeinfo["MaxOccupancy"]
         #Output
-        HTMLOut = f'<h1>{typename}</h1>'
+        HTMLOut = f'<h1>{name}</h1>'
         HTMLOut += f'<div><b>Price Per Night: </b>{pricePerNight} </div>'
         HTMLOut += f'<div><b>Price Per Extra Person: </b> {priceExtra} </div>'
         HTMLOut += f'<div><b>Standard Occupancy: </b> {standOcc} </div>'
