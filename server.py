@@ -15,7 +15,9 @@ def reservation():
     with requests.get(f'{API}/reservation/') as r:
         data = r.json()
         #OUtput
-        HTMLOut = '<h1>Reservations</h1>'
+        HTMLOut = '<div class="card" style="width: 40rem;">'
+        HTMLOut += f'<div class="card-header text-center">Reservations</div>'
+        HTMLOut += f'<ul class="list-group list-group-flush">'
         #For all reservations
         for res in data['reservations']:
             #sets variables to make code more understandable
@@ -26,12 +28,14 @@ def reservation():
             guestid = res["GuestID"]
 
             #Generates HTML
-            HTMLOut += '<div><p>'
-            HTMLOut += f'<b>ReservationID:</b> <a href="/reservation/search?reservationid={resid}">{resid}</a> '
-            HTMLOut += f'<b>Start Date:</b> {startdate} '
-            HTMLOut += f'<b>End Date:</b> {enddate} '
-            HTMLOut += f'<b>Guest:</b> <a href="/guest/search?guestid={guestid}">{name}</a>'
-            HTMLOut += '</p></div>'
+            HTMLOut += '<li class="list-group-item"><ul style="list-style: none">'
+            HTMLOut += f'<li><b>ReservationID:</b> <a class="btn btn-outline-secondary" role="button" href="/reservation/search?reservationid={resid}">{resid}</a></li>'
+            HTMLOut += f'<li><b>Start Date:</b> {startdate} </li>'
+            HTMLOut += f'<li><b>End Date:</b> {enddate} </li>'
+            HTMLOut += f'<li><b>Guest:</b> <a class="btn btn-outline-secondary" role="button" href="/guest/search?guestid={guestid}">{name}</a></li>'
+            HTMLOut += '</ul></li>'
+
+        HTMLOut += f'</ul></div>'
         #displays HTML
         HTMLOut = Markup(HTMLOut)
 
@@ -45,7 +49,9 @@ def get_reservation():
     with requests.get(f'{API}/reservation/{resid}') as r:
         data = r.json()
         #Gets all reservation information
-        HTMLOut = '<h1>Reservation</h1>'
+        HTMLOut = '<div class="card" style="width: 36rem;">'
+        HTMLOut += f'<div class="card-header text-center">Reservation</div>'
+        HTMLOut += f'<ul class="list-group list-group-flush">'
 
         res = data["reservations"][0]
         #sets eaier to read variables
@@ -59,18 +65,19 @@ def get_reservation():
 
 
         #Generates HTML
-        HTMLOut += '<div>'
-        HTMLOut += f'<div><p><b>ReservationID:</b>{resid}</p></div>'
-        HTMLOut += f'<div><p><b>Start Date:</b> {startdate}</p></div>'
-        HTMLOut += f'<div><p><b>End Date:</b> {enddate}</p></div>'
-        HTMLOut += f'<div><p><b>Rooms Booked:</b></p>'
+        HTMLOut += '<li class="list-group-item"><ul style="list-style: none">'
+        HTMLOut += f'<li><p><b>ReservationID:</b>{resid}</p></li>'
+        HTMLOut += f'<li><p><b>Start Date:</b> {startdate}</p></li>'
+        HTMLOut += f'<li><p><b>End Date:</b> {enddate}</p></li>'
+        HTMLOut += f'<li><p><b>Rooms Booked:</b></p>'
         for room in rooms:
-            HTMLOut += f'<div><a href="/rooms/search?roomnumber={room}">{room}</a></div>'
+            HTMLOut += f'<div><a class="btn btn-outline-secondary" role="button" href="/rooms/search?roomnumber={room}">{room}</a></div>'
 
-        HTMLOut += f'</div>'
-        HTMLOut += f'<div><b>Guest:</b> <a href="/guest/search?guestid={guestid}">{name}</a></div>'
-        HTMLOut += '</div>'
+        HTMLOut += f'</li>'
+        HTMLOut += f'<li><b>Guest:</b> <a class="btn btn-outline-secondary" role="button" href="/guest/search?guestid={guestid}">{name}</a></li>'
+        HTMLOut += '</ul></li>'
 
+        HTMLOut += f'</ul></div>'
         HTMLOut = Markup(HTMLOut)
 
         return render_template('index.html', content=HTMLOut)
@@ -85,7 +92,9 @@ def get_guestreservation():
         data = data["reservations"]
         #Gsets vatriable to Guest Name
 
-        HTMLOut = '<h1>Reservation</h1>'
+        HTMLOut = '<div class="card" style="width: 36rem;">'
+        HTMLOut += f'<div class="card-header text-center">Reservation</div>'
+        HTMLOut += f'<ul class="list-group list-group-flush">'
 
         for res in data:
             if res["GuestID"] == int(guestid):
@@ -94,11 +103,13 @@ def get_guestreservation():
                 startdate = res["StartDate"]
                 enddate = res["EndDate"]
                 #gen HTML
-                HTMLOut += f'<p>'
-                HTMLOut += f'<b>Reservation ID:</b> <a href="/reservation/search?reservationid={resid}">{resid}</a> '
+                HTMLOut += f'<li class="list-group-item">'
+                HTMLOut += f'<b>Reservation ID:</b> <a class="btn btn-outline-secondary" role="button" href="/reservation/search?reservationid={resid}">{resid}</a> '
                 HTMLOut += f'<b>Start Date:</b> {startdate} '
                 HTMLOut += f'<b>End Date:</b> {enddate}'
-                HTMLOut += f'</p>'
+                HTMLOut += f'</li>'
+
+    HTMLOut += f'</ul></div>'
     HTMLOut = Markup(HTMLOut)
 
     return render_template('index.html', content=HTMLOut)
@@ -111,13 +122,17 @@ def guests():
         data = r.json()
         data = data["guests"]
         #Title
-        HTMLOut = '<h1>Guests</h1>'
+        HTMLOut = '<div class="card" style="width: 15rem;">'
+        HTMLOut += f'<div class="card-header text-center">Guests</div>'
+        HTMLOut += f'<ul class="list-group list-group-flush">'
         #For every guest, creates a hyperlink to their "OWN" page with information about each guest
         for guest in data:
             guestid = guest["GuestID"]
             name = f'{guest["FirstName"]} {guest["LastName"]}'
-            HTMLOut += f'<div><a href="/guest/search?guestid={guestid}">{name}</a></div>'
+            HTMLOut += f'<li class="list-group-item"><a class="btn btn-outline-secondary" role="button" href="/guest/search?guestid={guestid}">{name}</a></li>'
         
+        HTMLOut += f'</ul></div>'
+
         HTMLOut = Markup(HTMLOut)
         return render_template('index.html', content=HTMLOut)
 
@@ -130,17 +145,18 @@ def get_guest():
         data = r.json()
         guest = data["guests"][0]
         #Output string
-        HTMLOut = '<h1>Guest</h1>'
+        HTMLOut = '<div class="card" style="width: 20rem;">'
+        
         #variables from query
         name = f'{guest["FirstName"]} {guest["LastName"]}'
         address = f'{guest["Address"]}, {guest["City"]}, {guest["State"]}, {guest["ZipCode"]}'
         phone = guest["Phone"]
         #generating HTML
-        HTMLOut += '<div>'
-        HTMLOut += f'<div><p><b>Name:</b> {name}</p></div>'
-        HTMLOut += f'<div><p><b>Address: </b> {address}</p></div>'
-        HTMLOut += f'<div><p><b>Phone:</b> {phone}</p></div>'
-        HTMLOut += f'<div><a href="/guest/reservation/search?guestid={guestid}">Reservations</a></div>'
+        HTMLOut += f'<div class="card-header text-center">{name}</div>'
+        HTMLOut += f'<ul class="list-group list-group-flush">'
+        HTMLOut += f'<li class="list-group-item"><p><b>Address: </b> {address}</p></li>'
+        HTMLOut += f'<li class="list-group-item"><p><b>Phone:</b> {phone}</p></li>'
+        HTMLOut += f'<li class="list-group-item"><a class="btn btn-outline-secondary" role="button" href="/guest/reservation/search?guestid={guestid}">Reservations</a></li>'
         HTMLOut += '</div>'
         
         HTMLOut = Markup(HTMLOut)
@@ -153,7 +169,9 @@ def rooms():
     with requests.get(f'{API}/room/') as r:
         data = r.json()
         data = data["rooms"]
-        HTMLOut = '<h1>Rooms</h1>'
+        HTMLOut = '<div class="card text-center" style="width: 30rem;">'
+        HTMLOut += f'<div class="card-header">Rooms</div>'
+        HTMLOut += f'<ul class="list-group list-group-flush">'
         #For every Room, creates a hyperlink to their "OWN" page with information about each Room
         for room in data:
             roomnum = room["RoomNumber"]
@@ -161,12 +179,13 @@ def rooms():
             price = room["Price"]
             typeid = room["TypeID"]
             #html for the room information
-            HTMLOut += f'<div><p>'
-            HTMLOut += f'<b>Room Number:</b> <a href="/rooms/search?roomnumber={roomnum}">{roomnum}</a> '
-            HTMLOut += f'<b>Type:</b> <a href="/type/search?type={typeid}">{roomtype}</a> '
+            HTMLOut += f'<li class="list-group-item">'
+            HTMLOut += f'<b>Room Number:</b> <a class="btn btn-outline-secondary" role="button" href="/rooms/search?roomnumber={roomnum}">{roomnum}</a> '
+            HTMLOut += f'<b>Type:</b> <a class="btn btn-outline-secondary" role="button" href="/type/search?type={typeid}">{roomtype}</a> '
             HTMLOut += f'<b>Price: </b>${price}'
-            HTMLOut += f'</p></div>'
+            HTMLOut += f'</li>'
 
+        HTMLOut += f'</ul></div>'
         HTMLOut = Markup(HTMLOut)
 
         return render_template('index.html', content=HTMLOut)
@@ -191,9 +210,15 @@ def get_room():
         #for amen in cursor.fetchall():
         #    amenities += f'<p> {amen[0]} </p>'
         
-        HTMLOut = f'<h1>{roomnum}</h1>'
-        HTMLOut += f'<p><b>Room Is a: </b><a href="/type/search?type={typeid}">{roomtype}</a></p><p><b>Amenities Included in the Room:</b> </p>'
+        HTMLOut = '<div class="card" style="width: 18rem;">'
+        HTMLOut += f'<div class="card-header text-center"><h5>{roomnum}</h5></div>'
+        HTMLOut += f'<ul class="list-group list-group-flush">'
+        HTMLOut += f'<li class="list-group-item">Room Is a: <a class="btn btn-outline-secondary" role="button" href="/type/search?type={typeid}">{roomtype}</a></li>'
+        HTMLOut += f'<li class="list-group-item">Amenities Included in the Room:</li>'
+        HTMLOut += f'</ul>'
+        HTMLOut += '</div>'
         #HTMLOut += f'<div>{amenities}</div>'
+        HTMLOut += f'</ul></div>'
         HTMLOut = Markup(HTMLOut)
 
         return render_template('index.html', content=HTMLOut)
@@ -214,11 +239,14 @@ def get_type():
         standOcc = typeinfo["StandardOccupancy"]
         maxOcc = typeinfo["MaxOccupancy"]
         #Output
-        HTMLOut = f'<h1>{name}</h1>'
-        HTMLOut += f'<div><b>Price Per Night: </b>{pricePerNight} </div>'
-        HTMLOut += f'<div><b>Price Per Extra Person: </b> {priceExtra} </div>'
-        HTMLOut += f'<div><b>Standard Occupancy: </b> {standOcc} </div>'
-        HTMLOut += f'<div><b>Maximum Occupancy</b> {maxOcc}</div>'
+        HTMLOut = '<div class="card" style="width: 18rem;">'
+        HTMLOut += f'<div class="card-header text-center"><h5>{name}</h5></div>'
+        HTMLOut += f'<ul class="list-group list-group-flush">'
+        HTMLOut += f'<li class="list-group-item"><b>Price Per Night: </b>{pricePerNight} </li>'
+        HTMLOut += f'<li class="list-group-item"><b>Price Per Extra Person: </b> {priceExtra} </li>'
+        HTMLOut += f'<li class="list-group-item"><b>Standard Occupancy: </b> {standOcc} </li>'
+        HTMLOut += f'<li class="list-group-item"><b>Maximum Occupancy</b> {maxOcc}</li>'
+
 
     HTMLOut = Markup(HTMLOut)
 
@@ -228,9 +256,19 @@ def get_type():
 @app.route('/')
 def index():
     #Here we are sayin that our HTMl is safe
-    #HTMLOut = Markup('<h1>Hotel</h1><a href="/guest">Guests</a> <a href="/rooms">Rooms</a> <a href="/reservation">Reservations</a>')
+    #HTMLOut = Markup('<h1>Hotel</h1><a class="btn btn-outline-secondary" role="button" href="/guest">Guests</a> <a class="btn btn-outline-secondary" role="button" href="/rooms">Rooms</a> <a class="btn btn-outline-secondary" role="button" href="/reservation">Reservations</a>')
     #Here we open out HTML file and place out HTML into our content tab
-    return render_template('index.html', content='')
 
-'''if __name__ == "__main__":
-    app.run()'''
+    HTMLOut = '<div class="card">'
+    HTMLOut += '<div class="card-body">'
+    HTMLOut += '<h5 class="card-title">Hotel Portal Home</h5>'
+    HTMLOut += '<p class="card-text">Welcome To Your Portal, Please Navigate using the Navigation Bar!</p>'
+    HTMLOut += '</div>'
+    HTMLOut += '</div>'
+
+    HTMLOut = Markup(HTMLOut)
+
+    return render_template('index.html', content=HTMLOut)
+
+if __name__ == "__main__":
+    app.run(debug=True, port=5000)
