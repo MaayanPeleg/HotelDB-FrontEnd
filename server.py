@@ -11,9 +11,10 @@ app = Flask(__name__)
 API = 'http://localhost:8000'
 
 def check_connection():
+    #checks if connection can be made with timeout of 5 seconds
     try:
-        http = urllib3.PoolManager()
-        r = http.request('GET', API)
+        http = urllib3.PoolManager(timeout=5)
+        http.request('GET', API)
         return True
     except:
         return False
@@ -24,7 +25,12 @@ def reservation():
     #check if connection can be made
 
     if check_connection() == False:
-        return render_template('index.html', content='Error: Could not connect to API')
+        HTMLOut = '<div class="card" style="width: 40rem;">'
+        HTMLOut += f'<div class="card-header text-center">Error: Could not connect to API</div>'
+        HTMLOut += f'</div>'
+
+        HTMLOut = Markup(HTMLOut)
+        return render_template('index.html', content=HTMLOut)
 
 
     with requests.get(f'{API}/reservation/') as r:
@@ -62,7 +68,12 @@ def get_reservation():
     #check if connection can be made
 
     if check_connection() == False:
-        return render_template('index.html', content='Error: Could not connect to API')
+        HTMLOut = '<div class="card" style="width: 40rem;">'
+        HTMLOut += f'<div class="card-header text-center">Error: Could not connect to API</div>'
+        HTMLOut += f'</div>'
+
+        HTMLOut = Markup(HTMLOut)
+        return render_template('index.html', content=HTMLOut)
 
     args = request.args.to_dict()
     resid = args['reservationid']
@@ -109,7 +120,12 @@ def get_guestreservation():
     #check if connection can be made
 
     if check_connection() == False:
-        return render_template('index.html', content='Error: Could not connect to API')
+        HTMLOut = '<div class="card" style="width: 40rem;">'
+        HTMLOut += f'<div class="card-header text-center">Error: Could not connect to API</div>'
+        HTMLOut += f'</div>'
+
+        HTMLOut = Markup(HTMLOut)
+        return render_template('index.html', content=HTMLOut)
     
     args = request.args.to_dict()
     guestid = args['guestid']
@@ -146,7 +162,12 @@ def guests():
     #check if connection can be made
 
     if check_connection() == False:
-        return render_template('index.html', content='Error: Could not connect to API')
+        HTMLOut = '<div class="card" style="width: 40rem;">'
+        HTMLOut += f'<div class="card-header text-center">Error: Could not connect to API</div>'
+        HTMLOut += f'</div>'
+
+        HTMLOut = Markup(HTMLOut)
+        return render_template('index.html', content=HTMLOut)
     #Connects to DB
     with requests.get(f'{API}/guest/') as r:
         data = r.json()
@@ -172,7 +193,12 @@ def get_guest():
     #check if connection can be made
 
     if check_connection() == False:
-        return render_template('index.html', content='Error: Could not connect to API')
+        HTMLOut = '<div class="card" style="width: 40rem;">'
+        HTMLOut += f'<div class="card-header text-center">Error: Could not connect to API</div>'
+        HTMLOut += f'</div>'
+
+        HTMLOut = Markup(HTMLOut)
+        return render_template('index.html', content=HTMLOut)
     
     #Gets arguments from URL
     args = request.args.to_dict()
@@ -204,7 +230,12 @@ def rooms():
     #check if connection can be made
 
     if check_connection() == False:
-        return render_template('index.html', content='Error: Could not connect to API')
+        HTMLOut = '<div class="card" style="width: 40rem;">'
+        HTMLOut += f'<div class="card-header text-center">Error: Could not connect to API</div>'
+        HTMLOut += f'</div>'
+
+        HTMLOut = Markup(HTMLOut)
+        return render_template('index.html', content=HTMLOut)
     
     #Connects to DB
     with requests.get(f'{API}/room/') as r:
@@ -236,7 +267,12 @@ def get_room():
     #check if connection can be made
 
     if check_connection() == False:
-        return render_template('index.html', content='Error: Could not connect to API')
+        HTMLOut = '<div class="card" style="width: 40rem;">'
+        HTMLOut += f'<div class="card-header text-center">Error: Could not connect to API</div>'
+        HTMLOut += f'</div>'
+
+        HTMLOut = Markup(HTMLOut)
+        return render_template('index.html', content=HTMLOut)
     
     #Gets arguments from URL
     args = request.args.to_dict()
@@ -276,7 +312,12 @@ def get_type():
     #check if connection can be made
 
     if check_connection() == False:
-        return render_template('index.html', content='Error: Could not connect to API')
+        HTMLOut = '<div class="card" style="width: 40rem;">'
+        HTMLOut += f'<div class="card-header text-center">Error: Could not connect to API</div>'
+        HTMLOut += f'</div>'
+
+        HTMLOut = Markup(HTMLOut)
+        return render_template('index.html', content=HTMLOut)
     
     #Gets arguments from URL
     args = request.args.to_dict()
