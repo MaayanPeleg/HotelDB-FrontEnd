@@ -4,3 +4,4 @@ Jinja2==3.0.3
 MarkupSafe==2.0.1
 mysql-connector-python==8.0.32
 protobuf==3.20.3
+requests==2.26.0
