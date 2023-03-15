@@ -4,14 +4,29 @@ from flask import Flask, request, render_template
 import mysql.connector as mysql
 import requests
 from markupsafe import Markup
+import urllib3
 
 app = Flask(__name__)
 
 API = 'http://localhost:8000'
 
+def check_connection():
+    try:
+        http = urllib3.PoolManager()
+        r = http.request('GET', API)
+        return True
+    except:
+        return False
+
 @app.route('/reservation/')
 def reservation():
     #Connect to db
+    #check if connection can be made
+
+    if check_connection() == False:
+        return render_template('index.html', content='Error: Could not connect to API')
+
+
     with requests.get(f'{API}/reservation/') as r:
         data = r.json()
         #OUtput
@@ -43,6 +58,12 @@ def reservation():
 
 @app.route('/reservation/search', methods=['GET'])
 def get_reservation():
+
+    #check if connection can be made
+
+    if check_connection() == False:
+        return render_template('index.html', content='Error: Could not connect to API')
+
     args = request.args.to_dict()
     resid = args['reservationid']
     #Connect to db
@@ -85,6 +106,11 @@ def get_reservation():
 #Here you can look at a guests reservations or a specific reservation
 @app.route('/guest/reservation/search', methods=['GET'])
 def get_guestreservation():
+    #check if connection can be made
+
+    if check_connection() == False:
+        return render_template('index.html', content='Error: Could not connect to API')
+    
     args = request.args.to_dict()
     guestid = args['guestid']
     with requests.get(f'{API}/reservation/') as r:
@@ -117,6 +143,10 @@ def get_guestreservation():
 #Route for guests
 @app.route('/guest/')
 def guests():
+    #check if connection can be made
+
+    if check_connection() == False:
+        return render_template('index.html', content='Error: Could not connect to API')
     #Connects to DB
     with requests.get(f'{API}/guest/') as r:
         data = r.json()
@@ -139,6 +169,12 @@ def guests():
 #Connect city table by zip code!!
 @app.route('/guest/search', methods=['GET'])
 def get_guest():
+    #check if connection can be made
+
+    if check_connection() == False:
+        return render_template('index.html', content='Error: Could not connect to API')
+    
+    #Gets arguments from URL
     args = request.args.to_dict()
     guestid = args['guestid']
     with requests.get(f'{API}/guest/{guestid}') as r:
@@ -165,6 +201,11 @@ def get_guest():
 
 @app.route('/rooms')
 def rooms():
+    #check if connection can be made
+
+    if check_connection() == False:
+        return render_template('index.html', content='Error: Could not connect to API')
+    
     #Connects to DB
     with requests.get(f'{API}/room/') as r:
         data = r.json()
@@ -192,6 +233,12 @@ def rooms():
     
 @app.route('/rooms/search', methods=['GET'])
 def get_room():
+    #check if connection can be made
+
+    if check_connection() == False:
+        return render_template('index.html', content='Error: Could not connect to API')
+    
+    #Gets arguments from URL
     args = request.args.to_dict()
     roomnum = args['roomnumber']
     #Connects to DB
@@ -226,6 +273,12 @@ def get_room():
 #Room Types Page
 @app.route('/type/search', methods=['GET'])
 def get_type():
+    #check if connection can be made
+
+    if check_connection() == False:
+        return render_template('index.html', content='Error: Could not connect to API')
+    
+    #Gets arguments from URL
     args = request.args.to_dict()
     typeid = args['type']
 
