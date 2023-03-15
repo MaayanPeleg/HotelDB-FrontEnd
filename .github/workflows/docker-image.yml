@@ -25,4 +25,4 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: maayanpeleg87/hotel-frontend:${{ github.sha }}
+          tags: maayanpeleg87/hotel-frontend:${{ github.sha }}, maayanpeleg87/hotel-frontend:latest
