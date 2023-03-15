@@ -13,7 +13,7 @@ API = 'http://localhost:8000'
 def check_connection():
     #checks if connection can be made with timeout of 5 seconds
     try:
-        http = urllib3.PoolManager(timeout=5)
+        http = urllib3.PoolManager()
         http.request('GET', API)
         return True
     except:
