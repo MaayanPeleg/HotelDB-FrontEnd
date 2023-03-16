@@ -9,7 +9,9 @@ import os
 
 app = Flask(__name__)
 
-API = os.environ.get('API_URL')
+API = os.environ.get(API_URL)
+
+API = f'http://{API}'
 
 def check_connection():
     #checks if connection can be made with timeout of 5 seconds
