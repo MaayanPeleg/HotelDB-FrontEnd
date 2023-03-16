@@ -5,10 +5,11 @@ import mysql.connector as mysql
 import requests
 from markupsafe import Markup
 import urllib3
+import os
 
 app = Flask(__name__)
 
-API = 'http://localhost:8000'
+API = os.environ.get('API_URL')
 
 def check_connection():
     #checks if connection can be made with timeout of 5 seconds
