@@ -8,6 +8,6 @@ RUN pip install -r requirements.txt
 
 EXPOSE 5000
 
-ENV API_URL hotel-api:8000
+ENV API_URL hotel_api:8000
 
 CMD ["gunicorn", "server:app", "-b", "0.0.0.0:5000"]
