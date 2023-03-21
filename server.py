@@ -23,31 +23,6 @@ def check_connection():
     except:
         return False
 
-@app.route('/search', methods=['GET'])
-def search():
-    #get search query
-    args = request.args.to_dict()
-    search = args['search']
-    typeOf = args['type']
-    #This outputs to the user when there is an error connecting to the API
-    '''if check_connection() == False:
-        HTMLOut = '<div class="card" style="width: 40rem;">'
-        HTMLOut += f'<div class="card-header text-center">Error: Could not connect to API</div>'
-        HTMLOut += f'</div>'
-
-        HTMLOut = Markup(HTMLOut)
-        return render_template('index.html', content=HTMLOut)'''
-    
-    HTMLOut = '<div class="card" style="width: 40rem;">'
-    HTMLOut += f'<div class="card-header text-center">Search Results</div>'
-    HTMLOut += f'<ul class="list-group list-group-flush">'
-    HTMLOut += f'<li class="list-group-item">{search} {typeOf}</li>'
-    HTMLOut += f'</ul></div>'
-
-    HTMLOut = Markup(HTMLOut)
-
-    return render_template('index.html', content=HTMLOut)
-
 
 @app.route('/reservation/')
 def reservation():
