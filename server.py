@@ -23,6 +23,7 @@ def check_connection():
     except:
         return False
 
+
 @app.route('/reservation/')
 def reservation():
     #Connect to db
